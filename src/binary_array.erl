@@ -1,5 +1,5 @@
 -module(binary_array).
--author("Ted Behling; https://gist.github.com/tedb").
+-author("Ted Behling; https://github.com/tedb").
 -export([new/0, new/1, new/2, position/2, nth/2, sort/1, insert/2, to_list/1]).
 -record(?MODULE, {element_size, bin}).
 -include_lib("eunit/include/eunit.hrl").
@@ -18,12 +18,11 @@ new(ElementSize, Bin) ->
   #?MODULE{element_size = ElementSize, bin = Bin}.
 
 % Returns the first 0-based numeric position in the array where key was found, or nomatch
-position(Element, BinaryArray) when size(Element) == BinaryArray#?MODULE.element_size ->
+position(Element, #?MODULE{element_size = ElementSize, bin = Bin} = BinaryArray) when size(Element) == BinaryArray#?MODULE.element_size ->
   % binary:matches returns a list of all matches, as list of {Offset, Length}
   % we need to make sure we only get matches w/ the correct length and offset multiple (since we have no delimiters)
   % Offset is in bytes, need to convert it to an element position
-  AllMatches = binary:matches(BinaryArray#?MODULE.bin, Element),
-  ElementSize = BinaryArray#?MODULE.element_size,
+  AllMatches = binary:matches(Bin, Element),
   case [Offset div ElementSize || {Offset, _Length} <- AllMatches, Offset rem ElementSize == 0] of
     [] ->
       nomatch;
@@ -34,9 +33,8 @@ position(Element, BinaryArray) when size(Element) == BinaryArray#?MODULE.element
 
 % Returns the binary at the given position
 % NOTE this is different from lists:nth/2 in that it is zero based!
-nth(Position, BinaryArray) when is_integer(Position) ->
-  ElementSize = BinaryArray#?MODULE.element_size,
-  binary:part(BinaryArray#?MODULE.bin, {ElementSize * Position, ElementSize}).
+nth(Position, #?MODULE{element_size = ElementSize, bin = Bin} = _BinaryArray) when is_integer(Position) ->
+  binary:part(Bin, {ElementSize * Position, ElementSize}).
 
 % Returns a sorted binary_array
 % This is a very naive algorithm; this will temporarily use about 4x or more the memory during the sort, and is probably slow
@@ -45,14 +43,12 @@ sort(BinaryArray) ->
   SortedBin = erlang:list_to_binary( lists:sort( to_list(BinaryArray) ) ),
   BinaryArray#?MODULE{bin = SortedBin}.
 
-% Turns a binary_array with Element appended at the end
-insert(NewElement, BinaryArray) when size(NewElement) == BinaryArray#?MODULE.element_size ->
-  Elements = BinaryArray#?MODULE.bin,
-  BinaryArray#?MODULE{bin = <<Elements/binary, NewElement/binary>>}.
+% Returns a binary_array with Element appended at the end
+insert(NewElement, #?MODULE{element_size = ElementSize, bin = Bin} = BinaryArray) when size(NewElement) == ElementSize ->
+  BinaryArray#?MODULE{bin = <<Bin/binary, NewElement/binary>>}.
 
-to_list(BinaryArray) ->
-  ElementSize = BinaryArray#?MODULE.element_size,
-  [ X || <<X:ElementSize/binary>> <= BinaryArray#?MODULE.bin ].
+to_list(#?MODULE{element_size = ElementSize, bin = Bin} = _BinaryArray) ->
+  [ X || <<X:ElementSize/binary>> <= Bin ].
 
 % Start tests - run tests with eunit:test(binary_array)
 
