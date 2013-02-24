@@ -11,10 +11,10 @@
 
 % Returns a new binary_array for later use, defaulting to 10-byte elements and an empty binary
 new() ->
-  new(10, <<"">>).
+  new(10, <<>>).
 new(ElementSize) ->
-  new(ElementSize, <<"">>).
-new(ElementSize, Bin) ->
+  new(ElementSize, <<>>).
+new(ElementSize, Bin) when is_integer(ElementSize), is_binary(Bin) ->
   #?MODULE{element_size = ElementSize, bin = Bin}.
 
 % Returns the first 0-based numeric position in the array where key was found, or nomatch
@@ -53,8 +53,8 @@ to_list(#?MODULE{element_size = ElementSize, bin = Bin} = _BinaryArray) ->
 % Start tests - run tests with eunit:test(binary_array)
 
 new_test() ->
-  ?assertEqual({?MODULE,10,<<"">>}, ?MODULE:new()),
-  ?assertEqual({?MODULE,5,<<"">>}, ?MODULE:new(5)),
+  ?assertEqual({?MODULE,10,<<>>}, ?MODULE:new()),
+  ?assertEqual({?MODULE,5,<<>>}, ?MODULE:new(5)),
   ?assertEqual({?MODULE,7,<<"abcdefghijklmn">>}, ?MODULE:new(7, <<"abcdefghijklmn">>)),
   ok.
 
