@@ -1,6 +1,6 @@
 -module(binary_array).
 -author("Ted Behling; https://github.com/tedb").
--export([new/0, new/1, new/2, position/2, nth/2, sort/1, insert/2, to_list/1]).
+-export([new/0, new/1, new/2, position/2, nth/2, sort/1, insert/2, size/1, length/1, to_list/1]).
 -record(?MODULE, {element_size, bin}).
 -include_lib("eunit/include/eunit.hrl").
 
@@ -18,7 +18,7 @@ new(ElementSize, Bin) when is_integer(ElementSize), is_binary(Bin) ->
   #?MODULE{element_size = ElementSize, bin = Bin}.
 
 % Returns the first 0-based numeric position in the array where key was found, or nomatch
-position(Element, #?MODULE{element_size = ElementSize, bin = Bin} = BinaryArray) when size(Element) == BinaryArray#?MODULE.element_size ->
+position(Element, #?MODULE{element_size = ElementSize, bin = Bin} = BinaryArray) when is_binary(Element), size(Element) == ElementSize ->
   % binary:matches returns a list of all matches, as list of {Offset, Length}
   % we need to make sure we only get matches w/ the correct length and offset multiple (since we have no delimiters)
   % Offset is in bytes, need to convert it to an element position
@@ -44,8 +44,14 @@ sort(BinaryArray) ->
   BinaryArray#?MODULE{bin = SortedBin}.
 
 % Returns a binary_array with Element appended at the end
-insert(NewElement, #?MODULE{element_size = ElementSize, bin = Bin} = BinaryArray) when size(NewElement) == ElementSize ->
+insert(NewElement, #?MODULE{element_size = ElementSize, bin = Bin} = BinaryArray) when is_binary(NewElement), size(NewElement) == ElementSize ->
   BinaryArray#?MODULE{bin = <<Bin/binary, NewElement/binary>>}.
+
+size(BinaryArray) ->
+  length(BinaryArray).
+
+length(#?MODULE{element_size = ElementSize, bin = Bin} = _BinaryArray) ->
+  erlang:size(Bin) div ElementSize.
 
 to_list(#?MODULE{element_size = ElementSize, bin = Bin} = _BinaryArray) ->
   [ X || <<X:ElementSize/binary>> <= Bin ].
@@ -97,3 +103,11 @@ sort_list_test() ->
   ?assertEqual({?MODULE, 10, <<"1234567890abcdefghijbcdefghijk">>}, B2),
   ?assertEqual([<<"1234567890">>, <<"abcdefghij">>, <<"bcdefghijk">>], ?MODULE:to_list(B2)),
   ok.
+
+size_test() ->
+  B1 = ?MODULE:new(),
+  ?assertEqual(0, ?MODULE:size(B1)),
+
+  B2 = ?MODULE:new(10, <<"bcdefghijk1234567890abcdefghij">>),
+  ?assertEqual(3, ?MODULE:length(B2)),
+
