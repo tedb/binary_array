@@ -49,12 +49,15 @@ sort(BinaryArray) ->
 insert(NewElement, #?MODULE{element_size = ElementSize, bin = Bin} = BinaryArray) when is_binary(NewElement), erlang:size(NewElement) == ElementSize ->
   BinaryArray#?MODULE{bin = <<Bin/binary, NewElement/binary>>}.
 
+% Returns the number of elements in the binary_array (same as length)
 size(BinaryArray) ->
   length(BinaryArray).
 
+% Returns the number of elements in the binary_array (same as size)
 length(#?MODULE{element_size = ElementSize, bin = Bin} = _BinaryArray) ->
   erlang:size(Bin) div ElementSize.
 
+% Returns all the elements as a list of binaries
 to_list(#?MODULE{element_size = ElementSize, bin = Bin} = _BinaryArray) ->
   [ X || <<X:ElementSize/binary>> <= Bin ].
 
