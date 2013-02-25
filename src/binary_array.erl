@@ -3,6 +3,8 @@
 -export([new/0, new/1, new/2, position/2, nth/2, sort/1, insert/2, size/1, length/1, to_list/1]).
 -record(?MODULE, {element_size, bin}).
 -include_lib("eunit/include/eunit.hrl").
+% we need to not import erlang:length/1
+-compile({no_auto_import,[length/1]}).
 
 % binary_array serves the use case where a list of fixed-length binaries needs to be held in memory and the position of elements queried,
 % but a list of short binaries is memory-inefficient.
@@ -18,7 +20,7 @@ new(ElementSize, Bin) when is_integer(ElementSize), is_binary(Bin) ->
   #?MODULE{element_size = ElementSize, bin = Bin}.
 
 % Returns the first 0-based numeric position in the array where key was found, or nomatch
-position(Element, #?MODULE{element_size = ElementSize, bin = Bin} = BinaryArray) when is_binary(Element), size(Element) == ElementSize ->
+position(Element, #?MODULE{element_size = ElementSize, bin = Bin} = _BinaryArray) when is_binary(Element), erlang:size(Element) == ElementSize ->
   % binary:matches returns a list of all matches, as list of {Offset, Length}
   % we need to make sure we only get matches w/ the correct length and offset multiple (since we have no delimiters)
   % Offset is in bytes, need to convert it to an element position
@@ -44,7 +46,7 @@ sort(BinaryArray) ->
   BinaryArray#?MODULE{bin = SortedBin}.
 
 % Returns a binary_array with Element appended at the end
-insert(NewElement, #?MODULE{element_size = ElementSize, bin = Bin} = BinaryArray) when is_binary(NewElement), size(NewElement) == ElementSize ->
+insert(NewElement, #?MODULE{element_size = ElementSize, bin = Bin} = BinaryArray) when is_binary(NewElement), erlang:size(NewElement) == ElementSize ->
   BinaryArray#?MODULE{bin = <<Bin/binary, NewElement/binary>>}.
 
 size(BinaryArray) ->
@@ -110,4 +112,4 @@ size_test() ->
 
   B2 = ?MODULE:new(10, <<"bcdefghijk1234567890abcdefghij">>),
   ?assertEqual(3, ?MODULE:length(B2)),
-
+  ok.
