@@ -5,6 +5,7 @@ binary_array is a simple Erlang library to provide memory-compact arrays of fixe
 
 Compilation
 ---
+
 Compile:
 
 ```sh
@@ -16,6 +17,18 @@ Run unit tests:
 ```sh
 $ rebar eunit
 ```
+
+Using with Your Rebar App
+---
+
+If your Erlang app is built using Rebar, you can easily include binary_array as a dependency by adding this to your rebar.config file:
+
+```erlang
+{deps, [
+	{binary_array, ".*", {git, "git@github.com:tedb/binary_array.git"}}
+]}.
+```
+If you already have a deps section, just add the middle line to the list.  See the [rebar documentation](https://github.com/basho/rebar/wiki/Dependency-management) for details.
 
 Example
 ---
