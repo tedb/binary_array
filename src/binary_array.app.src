@@ -7,6 +7,5 @@
                   kernel,
                   stdlib
                  ]},
-  {mod, { binary_array, []}},
   {env, []}
  ]}.
