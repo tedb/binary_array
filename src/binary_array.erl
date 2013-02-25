@@ -2,7 +2,6 @@
 -author("Ted Behling; https://github.com/tedb").
 -export([new/0, new/1, new/2, position/2, nth/2, sort/1, insert/2, size/1, length/1, to_list/1]).
 -record(?MODULE, {element_size, bin}).
--include_lib("eunit/include/eunit.hrl").
 % we need to not import erlang:length/1
 -compile({no_auto_import,[length/1]}).
 
@@ -61,7 +60,10 @@ length(#?MODULE{element_size = ElementSize, bin = Bin} = _BinaryArray) ->
 to_list(#?MODULE{element_size = ElementSize, bin = Bin} = _BinaryArray) ->
   [ X || <<X:ElementSize/binary>> <= Bin ].
 
-% Start tests - run tests with eunit:test(binary_array)
+% Start tests - run tests with "eunit:test(binary_array)" or "rebar eunit"
+
+-ifdef(TEST).
+-include_lib("eunit/include/eunit.hrl").
 
 new_test() ->
   ?assertEqual({?MODULE,10,<<>>}, ?MODULE:new()),
@@ -120,3 +122,5 @@ size_test() ->
   B2 = ?MODULE:new(10, <<"bcdefghijk1234567890abcdefghij">>),
   ?assertEqual(3, ?MODULE:length(B2)),
   ok.
+
+-endif.
