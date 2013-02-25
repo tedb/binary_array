@@ -5,8 +5,17 @@ binary_array is a simple Erlang library to provide memory-compact arrays of fixe
 
 Compilation
 ---
-Compile with: rebar compile
-Run unit tests: rebar eunit
+Compile:
+
+```sh
+$ rebar compile
+```
+
+Run unit tests:
+
+```sh
+$ rebar eunit
+```
 
 Example
 ---
