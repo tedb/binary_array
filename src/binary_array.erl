@@ -69,7 +69,7 @@ new_test() ->
 empty_test() ->
   % initialize 3-byte array
   B = ?MODULE:new(3),
-  nomatch = ?MODULE:position(<<"abc">>, B),
+  ?assertEqual(nomatch, ?MODULE:position(<<"abc">>, B)),
   ok.
 
 insert_position_test() ->
@@ -86,8 +86,12 @@ insert_position_test() ->
   B4 = ?MODULE:insert(<<"ghi">>, B3),
   ?assertEqual(1, ?MODULE:position(<<"def">>, B4)),
   ?assertEqual(2, ?MODULE:position(<<"ghi">>, B4)),
-  % finally, make sure all is well behind the scenes
+  % make sure all is well behind the scenes
   ?assertEqual({?MODULE,3,<<"abcdefghi">>}, B4),
+  % make sure that if we query the position of a binary whose value straddles two others, it doesn't match
+  ?assertEqual(nomatch, ?MODULE:position(<<"cde">>, B4)),
+  % make sure querying for a non-existent binary returns nomatch
+  ?assertEqual(nomatch, ?MODULE:position(<<"zzz">>, B4)),
   ok.
 
 nth_test() ->
