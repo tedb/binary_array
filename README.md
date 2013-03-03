@@ -15,7 +15,7 @@ $ rebar compile
 Run unit tests:
 
 ```sh
-$ rebar eunit
+$ EUNIT=verbose rebar eunit
 ```
 
 Using with Your Rebar App
