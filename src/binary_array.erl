@@ -22,7 +22,7 @@ new(ElementSize, Bin) when is_integer(ElementSize), is_binary(Bin), erlang:size(
   #?MODULE{element_size = ElementSize, bin = Bin}.
 
 % Returns the first 0-based numeric position in the array where key was found, or nomatch
-position(Element, #?MODULE{element_size = ElementSize, bin = Bin} = BinaryArray) when is_record(BinaryArray, binary_array), is_binary(Element), erlang:size(Element) =:= ElementSize ->
+position(Element, #?MODULE{element_size = ElementSize, bin = Bin} = _BinaryArray) when is_binary(Element), erlang:size(Element) =:= ElementSize ->
   % binary:matches returns a list of all matches, as list of {Offset, Length}
   % we need to make sure we only get matches w/ the correct length and offset multiple (since we have no delimiters)
   % Offset is in bytes, need to convert it to an element position
@@ -38,7 +38,7 @@ position(Element, #?MODULE{element_size = ElementSize, bin = Bin} = BinaryArray)
 % same as position, but uses a binary search algorithm instead of sequential search
 % assumes the binary_array is already sorted!
 % this should perform in much faster O(log(n)) time instead of O(n) time
-position_binary_search(Element, #?MODULE{element_size = ElementSize, bin = Bin} = BinaryArray) when is_record(BinaryArray, binary_array), is_binary(Element), erlang:size(Element) =:= ElementSize ->
+position_binary_search(Element, #?MODULE{element_size = ElementSize, bin = Bin} = BinaryArray) when is_binary(Element), erlang:size(Element) =:= ElementSize ->
   do_binary_search(Element, Bin, 0, length(BinaryArray) - 1).
 
 % Returns the position of Element with 0 offset
@@ -70,18 +70,18 @@ do_binary_search(Element, Bin, StartPos, EndPos) ->
 
 % Returns the binary at the given position
 % NOTE this is different from lists:nth/2 in that this is zero based!
-nth(Position, #?MODULE{element_size = ElementSize, bin = Bin} = BinaryArray) when is_record(BinaryArray, binary_array), is_integer(Position) ->
+nth(Position, #?MODULE{element_size = ElementSize, bin = Bin} = _BinaryArray) when is_integer(Position) ->
   binary:part(Bin, {ElementSize * Position, ElementSize}).
 
 % Returns a sorted binary_array
 % This is a very naive algorithm; this will temporarily use about 4x or more the memory during the sort, and is probably slow
 % It is recommended to call erlang:garbage_collect after invoking this
-sort(BinaryArray) when is_record(BinaryArray, binary_array) ->
+sort(BinaryArray) ->
   SortedBin = erlang:list_to_binary( lists:sort( to_list(BinaryArray) ) ),
   BinaryArray#?MODULE{bin = SortedBin}.
 
 % Returns a binary_array with Element appended at the end
-insert(NewElement, #?MODULE{element_size = ElementSize, bin = Bin} = BinaryArray) when is_record(BinaryArray, binary_array), is_binary(NewElement), erlang:size(NewElement) == ElementSize ->
+insert(NewElement, #?MODULE{element_size = ElementSize, bin = Bin} = BinaryArray) when is_binary(NewElement), erlang:size(NewElement) == ElementSize ->
   BinaryArray#?MODULE{bin = <<Bin/binary, NewElement/binary>>}.
 
 % Returns the number of elements in the binary_array (same as length)
@@ -89,11 +89,11 @@ size(BinaryArray) ->
   length(BinaryArray).
 
 % Returns the number of elements in the binary_array (same as size)
-length(#?MODULE{element_size = ElementSize, bin = Bin} = BinaryArray) when is_record(BinaryArray, binary_array) ->
+length(#?MODULE{element_size = ElementSize, bin = Bin} = _BinaryArray) ->
   erlang:size(Bin) div ElementSize.
 
 % Returns all the elements as a list of binaries
-to_list(#?MODULE{element_size = ElementSize, bin = Bin} = BinaryArray) when is_record(BinaryArray, binary_array) ->
+to_list(#?MODULE{element_size = ElementSize, bin = Bin} = _BinaryArray) ->
   [ X || <<X:ElementSize/binary>> <= Bin ].
 
 % Start tests - run tests with "eunit:test(binary_array)" or "rebar eunit"
