@@ -1,6 +1,6 @@
 -module(binary_array).
 -author("Ted Behling; https://github.com/tedb").
--export([new/0, new/1, new/2, position/2, position_binary_search/2, nth/2, sort/1, insert/2, size/1, length/1, to_list/1]).
+-export([new/0, new/1, new/2, position/2, position_binary_search/2, nth/2, sort/1, insert/2, size/1, length/1, to_list/1, to_binary/1]).
 -record(?MODULE, {element_size, bin}).
 % we need to not import erlang:length/1
 -compile({no_auto_import,[length/1]}).
@@ -96,6 +96,10 @@ length(#?MODULE{element_size = ElementSize, bin = Bin} = _BinaryArray) ->
 to_list(#?MODULE{element_size = ElementSize, bin = Bin} = _BinaryArray) ->
   [ X || <<X:ElementSize/binary>> <= Bin ].
 
+% Return the inner binary; useful for writing to a file
+to_binary(#?MODULE{element_size = _ElementSize, bin = Bin} = _BinaryArray) ->
+  Bin.
+
 % Start tests - run tests with "eunit:test(binary_array)" or "rebar eunit"
 
 -ifdef(TEST).
@@ -112,6 +116,11 @@ empty_test() ->
   B = ?MODULE:new(3),
   ?assertEqual(nomatch, ?MODULE:position(<<"abc">>, B)),
   ok.
+
+conversion_test() ->
+  B = ?MODULE:new(7, <<"abcdefghijklmn">>),
+  ?assertEqual([<<"abcdefg">>, <<"hijklmn">>], ?MODULE:to_list(B)),
+  ?assertEqual(<<"abcdefghijklmn">>, ?MODULE:to_binary(B)).
 
 insert_position_test() ->
   % initialize 3-byte array
@@ -252,7 +261,7 @@ large_binary_position_test_do(NbrElements, B) ->
   % Make sure the 10 millionth number is in the right position
   PosNumber = (NbrElements div 10) * 9,
   {Time, FoundPosition} = timer:tc(?MODULE, position_binary_search, [<<PosNumber:80/integer>>, B]),
-  io:format(user, "position_binary_search for ~p elements took ~p us", [NbrElements, Time]),
+  io:format(user, "  position_binary_search for ~p elements took ~p us~n", [NbrElements, Time]),
   ?assertEqual(PosNumber - 1, FoundPosition),
   ok.
 
